@@ -1,6 +1,6 @@
 'use strict'
 
-let monthNames = {
+const monthNames = {
     'Polskie': {
         1: 'Powiedźmie',
         2: 'Zmiana Roku',
@@ -31,7 +31,7 @@ let monthNames = {
     }
 }
 
-let dayNames = {
+const dayNames = {
     'Polskie': {
         1: 'Dzień Pracy',
         2: 'Dzień Poboru',
@@ -54,7 +54,7 @@ let dayNames = {
     }
 }
 
-let monthDays = {
+const monthDays = {
     1: 32,
     2: 34,
     3: 33,
@@ -69,20 +69,39 @@ let monthDays = {
     12: 34
 }
 
-let specialDays = {
-    1: 'Mitterfruhl',
-    2: 'Sonnstill',
-    3: 'Geheimnistag',
-    4: 'Mitterbst',
-    5: 'Monstille',
-    6: 'Hexenstag'
+const specialDays = {
+    'Polskie': {
+        1: 'Równonoc wiosenna',
+        2: 'Przesilenie letnie',
+        3: 'Noc Tajemnicy',
+        4: 'Równonoc jesienna',
+        5: 'Przesilenie zimowe',
+        6: 'Noc Wiedźm'
+    },
+    'Niemieckie': {
+        1: 'Mitterfruhl',
+        2: 'Sonnstill',
+        3: 'Geheimnistag',
+        4: 'Mittherbst',
+        5: 'Monstille',
+        6: 'Hexenstag'
+    }
 }
+
+/** 
+* Renders editor for specific day
+*/
+function renderEditor(t) {
+    console.log(t.innerText)
+}
+
 
 /** 
 * Add day numbers to calendar.
 * @param {Number} year - current year
 */
 function setDays(year) {
+    let cells
     let months = document.getElementsByClassName('month')
     let month
     let days, day
@@ -110,18 +129,40 @@ function setDays(year) {
 
         for (let k = 0; k < days.length; k++) {
             days[k].innerText = ''
+            days[k].className = ''
         }
         
         for (let d = offset; d < monthDays[m] + offset; d++) {
             day++
             if (day === 34) {
                 specialDay++
-                days[d].innerText = specialDays[specialDay]
+                days[d].innerText = specialDays['Niemieckie'][specialDay]
+
+                days[d].onmouseover = function() {
+                    let value = this.innerText
+                    let obj = specialDays['Niemieckie']
+                    
+                    let plName = specialDays['Polskie'][Object.keys(obj).find(key => obj[key] === value)]
+
+                    console.log(plName)
+                }
             } else days[d].innerText = day
+            days[d].className = 'day'
         }
 
         offset += monthDays[m] - 32
         if (offset >= 8) offset = 0
+    }
+
+    cells = document.getElementsByTagName('td')
+    days = document.getElementsByClassName('day')
+
+    for (let x = 0; x < cells.length; x++) cells[x].onclick = undefined
+
+    for (let x = 0; x < days.length; x++) {
+        days[x].onclick = function() {
+            renderEditor(this)
+        }
     }
 }
 
@@ -180,7 +221,7 @@ window.onload = () => {
     let main = document.getElementsByTagName('main')[0]
     let lang = document.getElementById('lang').innerText
     let month, thead, tbody, tr, td, name
-    
+
     for (let m = 1; m <= 12; m++) {
         month = document.createElement('TABLE')
         month.className = 'month'
