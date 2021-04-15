@@ -56,17 +56,26 @@ let dayNames = {
 
 let monthDays = {
     1: 32,
-    2: 33,
+    2: 34,
     3: 33,
     4: 33,
-    5: 33,
-    6: 33,
+    5: 34,
+    6: 34,
     7: 32,
-    8: 33,
+    8: 34,
     9: 33,
     10: 33,
-    11: 33,
-    12: 33
+    11: 34,
+    12: 34
+}
+
+let specialDays = {
+    1: 'Mitterfruhl',
+    2: 'Sonnstill',
+    3: 'Geheimnistag',
+    4: 'Mitterbst',
+    5: 'Monstille',
+    6: 'Hexenstag'
 }
 
 /** 
@@ -76,7 +85,8 @@ let monthDays = {
 function setDays(year) {
     let months = document.getElementsByClassName('month')
     let month
-    let days
+    let days, day
+    let specialDay = 0
 
     let offset
 
@@ -88,12 +98,30 @@ function setDays(year) {
 
     for (let m = 1; m <= 12; m++) {
         days = []
+        day = 0
+
         month = months[m - 1].children[1].children
+
         for (let r = 1; r < 6; r++) {
-            for (let d = 0; d < month[r].children.length; d++) {
-                days.push(month[r].children[d])
+            for (let i = 0; i < month[r].children.length; i++) {
+                days.push(month[r].children[i])
             }
         }
+
+        for (let k = 0; k < days.length; k++) {
+            days[k].innerText = ''
+        }
+        
+        for (let d = offset; d < monthDays[m] + offset; d++) {
+            day++
+            if (day === 34) {
+                specialDay++
+                days[d].innerText = specialDays[specialDay]
+            } else days[d].innerText = day
+        }
+
+        offset += monthDays[m] - 32
+        if (offset >= 8) offset = 0
     }
 }
 
