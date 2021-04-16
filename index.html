@@ -7,7 +7,7 @@
     <title>Kalendarz</title>
 
     <link rel='stylesheet' href='styles/main.css' />
-    <script defer src='scripts/init.js'></script>
+    <script defer src='scripts/main.js'></script>
 </head>
 <body>
     <header>
@@ -22,7 +22,14 @@
     </header>
 
     <main>
-
+        <div id='editor' style='display: none'>
+            <h2 id='day'></h2>
+            <form>
+                <textarea></textarea>
+            </form>
+            <button id='save'>Zapisz wpis</button>
+            <button id='close'>Zamknij</button>
+        </div>
     </main>
 </body>
 </html>

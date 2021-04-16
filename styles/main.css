@@ -53,12 +53,25 @@ table {
 th,
 td {
     padding: 4px;
-    width: 24px;
-    height: 24px;
+    width: 100px;
+    height: 32px;
     border: 1px solid black;
     text-align: center;
 }
 
 .dayName {
     font-weight: 700;
+}
+
+#plName,
+#editor {
+    position: fixed;
+    padding: 16px;
+    text-align: center;
+    border: 8px double black;
+    background-color: white;
+}
+
+#day {
+    margin: 0 0 16px 0;
 }

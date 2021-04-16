@@ -91,8 +91,18 @@ const specialDays = {
 /** 
 * Renders editor for specific day
 */
-function renderEditor(t) {
-    console.log(t.innerText)
+function renderEditor(el) {
+    let month = el.parentElement.parentElement.parentElement.children[0].children[0].children[0].innerText
+    let title = document.getElementById('day')
+
+    let obj = specialDays['Niemieckie']
+
+    document.getElementById('editor').style.display = ''
+    month = month.substr(month.indexOf(' '))
+
+    title.innerText = el.innerText + (isNaN(parseInt(el.innerText)) ? 
+        (' - ' + specialDays['Polskie'][Object.keys(obj).find(key => obj[key] === el.innerText)]) : 
+        ('. ' + month))
 }
 
 
@@ -130,6 +140,8 @@ function setDays(year) {
         for (let k = 0; k < days.length; k++) {
             days[k].innerText = ''
             days[k].className = ''
+            days[k].onmouseover = undefined
+            days[k].onmouseout = undefined
         }
         
         for (let d = offset; d < monthDays[m] + offset; d++) {
@@ -138,15 +150,26 @@ function setDays(year) {
                 specialDay++
                 days[d].innerText = specialDays['Niemieckie'][specialDay]
 
-                days[d].onmouseover = function() {
+                days[d].onmouseover = function(e) {
                     let value = this.innerText
                     let obj = specialDays['Niemieckie']
-                    
+                    let dialog = document.createElement('div')
                     let plName = specialDays['Polskie'][Object.keys(obj).find(key => obj[key] === value)]
 
-                    console.log(plName)
+                    dialog.id = 'plName'
+                    dialog.innerText = plName
+                    document.body.prepend(dialog)
+                    dialog.style.top = e.clientY - e.offsetY - (1.5 * dialog.clientHeight) + 'px'
+                    dialog.style.left = e.clientX - e.offsetX - (dialog.clientWidth / 4) + 'px'
                 }
-            } else days[d].innerText = day
+
+                days[d].onmouseout = () => {
+                    document.getElementById('plName').remove()
+                }
+            } else {
+                days[d].innerText = day
+            }
+
             days[d].className = 'day'
         }
 
@@ -205,6 +228,15 @@ document.getElementById('year').oninput = function() {
     setDays(year)
 }
 
+document.getElementById('save').onclick = () => {
+    document.getElementById('editor').style.display = 'none'
+    console.log('saved')
+}
+
+document.getElementById('close').onclick = () => {
+    document.getElementById('editor').style.display = 'none'
+}
+
 window.onload = () => {
     switch (document.getElementById('ed').innerText) {
     case 'II':
@@ -223,10 +255,10 @@ window.onload = () => {
     let month, thead, tbody, tr, td, name
 
     for (let m = 1; m <= 12; m++) {
-        month = document.createElement('TABLE')
+        month = document.createElement('table')
         month.className = 'month'
-        thead = document.createElement('THEAD')
-        tbody = document.createElement('TBODY')
+        thead = document.createElement('thead')
+        tbody = document.createElement('tbody')
 
         name = '<tr><th colspan="8">' + m + '. '
         name += '<span class="monthName">'
@@ -236,10 +268,10 @@ window.onload = () => {
         thead.innerHTML = name
 
         for (let r = 0; r < 6; r++) {
-            tr = document.createElement('TR')
+            tr = document.createElement('tr')
 
             for (let c = 1; c <= 8; c++) {
-                td = document.createElement('TD')
+                td = document.createElement('td')
 
                 if (r === 0) {
                     td.className = 'dayName'
