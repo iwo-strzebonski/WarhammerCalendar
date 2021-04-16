@@ -63,6 +63,15 @@ td {
     font-weight: 700;
 }
 
+button,
+.days {
+    cursor: pointer;
+}
+
+.dayName {
+    height: 38px;
+}
+
 #plName,
 #editor {
     position: fixed;

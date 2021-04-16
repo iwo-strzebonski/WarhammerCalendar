@@ -111,7 +111,6 @@ function renderEditor(el) {
 * @param {Number} year - current year
 */
 function setDays(year) {
-    let cells
     let months = document.getElementsByClassName('month')
     let month
     let days, day
@@ -142,6 +141,7 @@ function setDays(year) {
             days[k].className = ''
             days[k].onmouseover = undefined
             days[k].onmouseout = undefined
+            days[k].onclick = undefined
         }
         
         for (let d = offset; d < monthDays[m] + offset; d++) {
@@ -170,22 +170,15 @@ function setDays(year) {
                 days[d].innerText = day
             }
 
-            days[d].className = 'day'
+            days[d].className = 'days'
+
+            days[d].onclick = function() {
+                renderEditor(this)
+            }
         }
 
         offset += monthDays[m] - 32
         if (offset >= 8) offset = 0
-    }
-
-    cells = document.getElementsByTagName('td')
-    days = document.getElementsByClassName('day')
-
-    for (let x = 0; x < cells.length; x++) cells[x].onclick = undefined
-
-    for (let x = 0; x < days.length; x++) {
-        days[x].onclick = function() {
-            renderEditor(this)
-        }
     }
 }
 
