@@ -43,10 +43,10 @@
     "no-var":2,
     "no-eval":"error",
     "no-console":[
-      "error",
+      "warn",
       {
         "allow":[
-          "warn"
+          "info"
         ]
       }
     ],

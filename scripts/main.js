@@ -88,14 +88,16 @@ const specialDays = {
     }
 }
 
+let data = []
+
 /** 
 * Renders editor for specific day
 */
 function renderEditor(el) {
     let month = el.parentElement.parentElement.parentElement.children[0].children[0].children[0].innerText
-    let title = document.getElementById('day')
+    const title = document.getElementById('day')
 
-    let obj = specialDays['Niemieckie']
+    const obj = specialDays['Niemieckie']
 
     document.getElementById('editor').style.display = ''
     month = month.substr(month.indexOf(' '))
@@ -103,6 +105,8 @@ function renderEditor(el) {
     title.innerText = el.innerText + (isNaN(parseInt(el.innerText)) ? 
         (' - ' + specialDays['Polskie'][Object.keys(obj).find(key => obj[key] === el.innerText)]) : 
         ('. ' + month))
+
+    document.getElementsByTagName('textarea')[0].value = ''
 }
 
 
@@ -221,9 +225,107 @@ document.getElementById('year').oninput = function() {
     setDays(year)
 }
 
-document.getElementById('save').onclick = () => {
+/*
+[{
+    'year': y,
+    'data': [{
+        'month': m,
+        'data': [{
+            'day': d,
+            'data': ''
+        }]
+    }]
+}]
+*/
+
+document.getElementById('save').onclick = function() {
+    const lang = document.getElementById('lang').innerText
+    const year = document.getElementById('year').value
+
+    let month = null
+    let day = document.getElementById('day').innerText
+    day = day.substring(0, day.indexOf('.'))
+
+    if (!isNaN(parseInt(day))) {
+        month = document.getElementById('day').innerText
+        month = month.substr(month.indexOf(' ') + 1)
+
+        const obj = monthNames[lang]
+        month = monthNames['Niemieckie'][
+            Object.keys(obj).find(key => obj[key] === month)
+        ]
+    } else {
+        month = document.getElementById('day').innerText
+        month = month.substring(0, month.indexOf(' '))
+
+        day = null
+    }
+
+    let isYearSet = false
+    let isMonthSet = false
+    let isDaySet = false
+    let yindex = -1
+    let mindex = -1
+    let dindex = -1
+
+    if (document.getElementsByTagName('textarea')[0].value !== '') {
+        const text = document.getElementsByTagName('textarea')[0].value
+
+        for (let i = 0; i < data.length; i++) {
+            if (data[i].year === year) {
+                isYearSet = true
+                yindex = i
+                break
+            }
+        }
+        
+        if (!isYearSet) {
+            data.push({ 'year': year, 'data': [] })
+            yindex = data.length - 1
+            isYearSet = true
+        }
+
+        for (let i = 0; i < data[yindex].data.length; i++) {
+            if (data[yindex].data[i].month === month) {
+                isMonthSet = true
+                mindex = i
+                break
+            }
+        }
+        
+        if (!isMonthSet) {
+            if (day === null) data[yindex].data.push({ 'month': month, data: '' })
+            else data[yindex].data.push({ 'month': month, 'data': [] })
+            mindex = data[yindex].data.length - 1
+            isMonthSet = true
+        }
+
+        if (day !== null) {
+            for (let i = 0; i < data[yindex].data[mindex].data.length; i++) {
+                if (data[yindex].data[mindex].data[i].day === day) {
+                    isDaySet = true
+                    dindex = i
+                    break
+                }
+            }
+
+            if (!isDaySet) {
+                data[yindex].data[mindex].data.push({ 'day': day, data: '' })
+                dindex = data[yindex].data[mindex].data.length - 1
+                isDaySet = true
+            }
+        }
+
+        if (isDaySet) {
+            data[yindex].data[mindex].data[dindex].data = text
+        } else {
+            data[yindex].data[mindex].data = text
+        }
+    }
+
+    console.log(JSON.stringify(data))
+
     document.getElementById('editor').style.display = 'none'
-    console.log('saved')
 }
 
 document.getElementById('close').onclick = () => {
