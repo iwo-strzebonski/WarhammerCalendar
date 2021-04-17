@@ -84,3 +84,11 @@ button,
 #day {
     margin: 0 0 16px 0;
 }
+
+#file {
+    font-size: large;
+    font-weight: 700;
+    display: block;
+    padding: 16px;
+    margin: 0 auto 16px auto;
+}

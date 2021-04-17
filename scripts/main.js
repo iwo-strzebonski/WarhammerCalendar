@@ -88,15 +88,155 @@ const specialDays = {
     }
 }
 
+
+/**
+ * Data JSON structure
+[{
+    'year': y,
+    'data': [
+        {
+        'month': m,
+        'data': [{
+            'day': d,
+            'data': ''
+        },
+        {
+        'month': m,
+        'data': ''
+        }]
+    }]
+}]
+*/
 let data = []
 
+
 /** 
-* Renders editor for specific day
-*/
+ * Retrieves data from variable for a specific day
+ * @param {String} year - current year
+ * @param {String} month - German (Reikspiel) name of month; can also be a name of a special holiday
+ * @param {String} day - number of selected day; if null, it means that that day is a special holiday
+ * @return {String} retrieved data from variable
+ */
+function getData(year, month, day) {
+    let isYearSet = false
+    let isMonthSet = false
+    let isDaySet = false
+    let yindex = -1
+    let mindex = -1
+    let dindex = -1
+
+    for (let i = 0; i < data.length; i++) {
+        if (data[i].year === year) {
+            isYearSet = true
+            yindex = i
+            break
+        }
+    }
+    
+    if (!isYearSet) return ''
+
+    for (let i = 0; i < data[yindex].data.length; i++) {
+        if (data[yindex].data[i].month === month) {
+            isMonthSet = true
+            mindex = i
+            break
+        }
+    }
+    
+    if (!isMonthSet) return ''
+
+    if (day !== null) {
+        for (let i = 0; i < data[yindex].data[mindex].data.length; i++) {
+            if (data[yindex].data[mindex].data[i].day === day) {
+                isDaySet = true
+                dindex = i
+                break
+            }
+        }
+
+        if (!isDaySet) return ''
+    }
+
+    return (isDaySet) ?
+        (data[yindex].data[mindex].data[dindex].data) :
+        (data[yindex].data[mindex].data)
+}
+
+
+/** 
+ * Saves data from day editor to variable
+ * @param {String} year - current year
+ * @param {String} month - German (Reikspiel) name of month; can also be a name of a special holiday
+ * @param {String} day - number of selected day; if null, it means that that day is a special holiday
+ */
+function saveData(year, month, day) {
+    const text = document.getElementsByTagName('textarea')[0].value
+    let isYearSet = false
+    let isMonthSet = false
+    let isDaySet = false
+    let yindex = -1
+    let mindex = -1
+    let dindex = -1
+
+    for (let i = 0; i < data.length; i++) {
+        if (data[i].year === year) {
+            isYearSet = true
+            yindex = i
+            break
+        }
+    }
+    
+    if (!isYearSet) {
+        data.push({ 'year': year, 'data': [] })
+        yindex = data.length - 1
+        isYearSet = true
+    }
+
+    for (let i = 0; i < data[yindex].data.length; i++) {
+        if (data[yindex].data[i].month === month) {
+            isMonthSet = true
+            mindex = i
+            break
+        }
+    }
+    
+    if (!isMonthSet) {
+        if (day === null) data[yindex].data.push({ 'month': month, data: '' })
+        else data[yindex].data.push({ 'month': month, 'data': [] })
+        mindex = data[yindex].data.length - 1
+        isMonthSet = true
+    }
+
+    if (day !== null) {
+        for (let i = 0; i < data[yindex].data[mindex].data.length; i++) {
+            if (data[yindex].data[mindex].data[i].day === day) {
+                isDaySet = true
+                dindex = i
+                break
+            }
+        }
+
+        if (!isDaySet) {
+            data[yindex].data[mindex].data.push({ 'day': day, data: '' })
+            dindex = data[yindex].data[mindex].data.length - 1
+            isDaySet = true
+        }
+    }
+
+    if (isDaySet) {
+        data[yindex].data[mindex].data[dindex].data = text
+    } else {
+        data[yindex].data[mindex].data = text
+    }
+}
+
+
+/** 
+ * Renders editor for specific day
+ */
 function renderEditor(el) {
     let month = el.parentElement.parentElement.parentElement.children[0].children[0].children[0].innerText
     const title = document.getElementById('day')
-
     const obj = specialDays['Niemieckie']
 
     document.getElementById('editor').style.display = ''
@@ -106,14 +246,37 @@ function renderEditor(el) {
         (' - ' + specialDays['Polskie'][Object.keys(obj).find(key => obj[key] === el.innerText)]) : 
         ('. ' + month))
 
-    document.getElementsByTagName('textarea')[0].value = ''
+
+    const lang = document.getElementById('lang').innerText
+    const year = document.getElementById('year').value
+    
+    month = null
+    let day = document.getElementById('day').innerText
+    day = day.substring(0, day.indexOf('.'))
+    
+    if (!isNaN(parseInt(day))) {
+        month = document.getElementById('day').innerText
+        month = month.substr(month.indexOf(' ') + 1)
+    
+        const obj = monthNames[lang]
+        month = monthNames['Niemieckie'][
+            Object.keys(obj).find(key => obj[key] === month)
+        ]
+    } else {
+        month = document.getElementById('day').innerText
+        month = month.substring(0, month.indexOf(' '))
+    
+        day = null
+    }
+
+    document.getElementsByTagName('textarea')[0].value = getData(year, month, day)
 }
 
 
 /** 
-* Add day numbers to calendar.
-* @param {Number} year - current year
-*/
+ * Add day numbers to calendar.
+ * @param {Number} year - current year
+ */
 function setDays(year) {
     let months = document.getElementsByClassName('month')
     let month
@@ -186,6 +349,7 @@ function setDays(year) {
     }
 }
 
+
 document.getElementById('prevYear').onclick = () => {
     let year = parseInt(document.getElementById('year').value) - 1
     let len = year.toString().length
@@ -201,6 +365,7 @@ document.getElementById('nextYear').onclick = () => {
     document.getElementById('year').size = len - 1 > 0 ? len - 1 : 1
     setDays(year)
 }
+
 
 document.getElementById('lang').onclick = function() {
     let lang = document.getElementById('lang').innerText === 'Polskie' ? 'Niemieckie' : 'Polskie'
@@ -218,6 +383,7 @@ document.getElementById('lang').onclick = function() {
     document.getElementById('lang').innerText = lang
 }
 
+
 document.getElementById('year').oninput = function() {
     let year = parseInt(this.value)
     let len = year.toString().length
@@ -225,18 +391,6 @@ document.getElementById('year').oninput = function() {
     setDays(year)
 }
 
-/*
-[{
-    'year': y,
-    'data': [{
-        'month': m,
-        'data': [{
-            'day': d,
-            'data': ''
-        }]
-    }]
-}]
-*/
 
 document.getElementById('save').onclick = function() {
     const lang = document.getElementById('lang').innerText
@@ -261,76 +415,18 @@ document.getElementById('save').onclick = function() {
         day = null
     }
 
-    let isYearSet = false
-    let isMonthSet = false
-    let isDaySet = false
-    let yindex = -1
-    let mindex = -1
-    let dindex = -1
-
-    if (document.getElementsByTagName('textarea')[0].value !== '') {
-        const text = document.getElementsByTagName('textarea')[0].value
-
-        for (let i = 0; i < data.length; i++) {
-            if (data[i].year === year) {
-                isYearSet = true
-                yindex = i
-                break
-            }
-        }
-        
-        if (!isYearSet) {
-            data.push({ 'year': year, 'data': [] })
-            yindex = data.length - 1
-            isYearSet = true
-        }
-
-        for (let i = 0; i < data[yindex].data.length; i++) {
-            if (data[yindex].data[i].month === month) {
-                isMonthSet = true
-                mindex = i
-                break
-            }
-        }
-        
-        if (!isMonthSet) {
-            if (day === null) data[yindex].data.push({ 'month': month, data: '' })
-            else data[yindex].data.push({ 'month': month, 'data': [] })
-            mindex = data[yindex].data.length - 1
-            isMonthSet = true
-        }
-
-        if (day !== null) {
-            for (let i = 0; i < data[yindex].data[mindex].data.length; i++) {
-                if (data[yindex].data[mindex].data[i].day === day) {
-                    isDaySet = true
-                    dindex = i
-                    break
-                }
-            }
-
-            if (!isDaySet) {
-                data[yindex].data[mindex].data.push({ 'day': day, data: '' })
-                dindex = data[yindex].data[mindex].data.length - 1
-                isDaySet = true
-            }
-        }
-
-        if (isDaySet) {
-            data[yindex].data[mindex].data[dindex].data = text
-        } else {
-            data[yindex].data[mindex].data = text
-        }
-    }
+    saveData(year, month, day)
 
     console.log(JSON.stringify(data))
 
     document.getElementById('editor').style.display = 'none'
 }
 
+
 document.getElementById('close').onclick = () => {
     document.getElementById('editor').style.display = 'none'
 }
+
 
 window.onload = () => {
     switch (document.getElementById('ed').innerText) {
