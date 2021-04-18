@@ -239,7 +239,7 @@ function renderEditor(el) {
     const title = document.getElementById('day')
     const obj = specialDays['Niemieckie']
 
-    document.getElementById('editor').style.display = ''
+    document.getElementById('gray').style.display = ''
     month = month.substr(month.indexOf(' '))
 
     title.innerText = el.innerText + (isNaN(parseInt(el.innerText)) ? 
@@ -358,6 +358,7 @@ document.getElementById('prevYear').onclick = () => {
     setDays(year)
 }
 
+
 document.getElementById('nextYear').onclick = () => {
     let year = parseInt(document.getElementById('year').value) + 1
     let len = year.toString().length
@@ -419,12 +420,36 @@ document.getElementById('save').onclick = function() {
 
     console.log(JSON.stringify(data))
 
-    document.getElementById('editor').style.display = 'none'
+    document.getElementById('gray').style.display = 'none'
 }
 
 
 document.getElementById('close').onclick = () => {
-    document.getElementById('editor').style.display = 'none'
+    document.getElementById('gray').style.display = 'none'
+}
+
+
+document.getElementById('saveFile').onclick = () => {
+    const a = document.createElement('a')
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(data)], {
+        type: 'text/plain'
+    }))
+    a.setAttribute('download', 'data.txt')
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+}
+
+
+document.getElementsByTagName('form')[0].onchange = function(e) {
+    const fileList = e.target.files
+
+    const fr = new FileReader()
+    fr.onload = () => {
+        data = JSON.parse(fr.result)
+    }
+
+    fr.readAsText(fileList[0])
 }
 
 

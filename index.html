@@ -21,23 +21,26 @@
             <button id='nextYear'>&gt;</button>
         </h3>
         <h3><span>Nazwy:</span><button id='lang'>Polskie</button></h3>
-        <button id='file'>Zapisz do pliku</button>
+        <form id='loadFile'>
+            <label for='file'>Wczytaj plik:</label>
+            <br>
+            <input type='file' name='file'>
+        </form>
+        <button id='saveFile'>Zapisz do pliku</button>
     </header>
 
     <main>
-        <div id='editor' style='display: none'>
-            <h2 id='day'></h2>
-            <form>
-                <textarea></textarea>
-            </form>
-            <button id='save'>Zapisz wpis</button>
-            <button id='close'>Zamknij</button>
+        <div id='gray' style='display: none'>
+            <div id='editor'>
+                <h2 id='day'></h2>
+                <form>
+                    <textarea></textarea>
+                </form>
+                <button id='save'>Zapisz wpis</button>
+                <button id='close'>Zamknij</button>
+            </div>
         </div>
     </main>
-
-    <footer>
-        <button id='file'>Zapisz do pliku</button>
-    </footer>
 </body>
 
 </html>
