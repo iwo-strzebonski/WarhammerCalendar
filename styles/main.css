@@ -61,15 +61,24 @@ td {
 
 .dayName {
     font-weight: 700;
+    height: 38px;
 }
 
 button,
-.days {
+input,
+.days,
+.specialDay {
     cursor: pointer;
 }
 
-.dayName {
-    height: 38px;
+.specialDay {
+    margin: 0 18px 32px 18px;
+    height: 40px;
+    line-height: 40px;
+    border: 1px solid black;
+    text-align: center;
+    font-weight: 700;
+
 }
 
 #plName,

@@ -54,40 +54,28 @@ const dayNames = {
     }
 }
 
-const monthDays = {
-    1: 32,
-    2: 34,
-    3: 33,
-    4: 33,
-    5: 34,
-    6: 34,
-    7: 32,
-    8: 34,
-    9: 33,
-    10: 33,
-    11: 34,
-    12: 34
-}
-
 const specialDays = {
     'Polskie': {
+        0: 'Noc Wiedźm',
         1: 'Równonoc wiosenna',
         2: 'Przesilenie letnie',
         3: 'Noc Tajemnicy',
         4: 'Równonoc jesienna',
         5: 'Przesilenie zimowe',
-        6: 'Noc Wiedźm'
     },
     'Niemieckie': {
+        0: 'Hexenstag',
         1: 'Mitterfruhl',
         2: 'Sonnstill',
         3: 'Geheimnistag',
         4: 'Mittherbst',
         5: 'Monstille',
-        6: 'Hexenstag'
     }
 }
 
+const starSign = {
+    
+}
 
 /**
  * Data JSON structure
@@ -201,7 +189,9 @@ function saveData(year, month, day) {
     }
     
     if (!isMonthSet) {
-        if (day === null) data[yindex].data.push({ 'month': month, data: '' })
+        if (day === null) {
+            data[yindex].data.push({ 'month': month, data: '' })
+        }
         else data[yindex].data.push({ 'month': month, 'data': [] })
         mindex = data[yindex].data.length - 1
         isMonthSet = true
@@ -232,24 +222,21 @@ function saveData(year, month, day) {
 
 
 /** 
- * Renders editor for specific day
+ * Renders editor for specific day of month
+ * @param {Object} - element targetted by onclick event
  */
-function renderEditor(el) {
-    let month = el.parentElement.parentElement.parentElement.children[0].children[0].children[0].innerText
+function renderDayEditor(el) {
+    const lang = document.getElementById('lang').innerText
+    const year = document.getElementById('year').value
     const title = document.getElementById('day')
-    const obj = specialDays['Niemieckie']
+    
+    let month = el.parentElement.parentElement.parentElement.children[0].children[0].children[0].innerText
 
     document.getElementById('gray').style.display = ''
     month = month.substr(month.indexOf(' '))
 
-    title.innerText = el.innerText + (isNaN(parseInt(el.innerText)) ? 
-        (' - ' + specialDays['Polskie'][Object.keys(obj).find(key => obj[key] === el.innerText)]) : 
-        ('. ' + month))
+    title.innerText = el.innerText + '. ' + month
 
-
-    const lang = document.getElementById('lang').innerText
-    const year = document.getElementById('year').value
-    
     month = null
     let day = document.getElementById('day').innerText
     day = day.substring(0, day.indexOf('.'))
@@ -272,6 +259,26 @@ function renderEditor(el) {
     document.getElementsByTagName('textarea')[0].value = getData(year, month, day)
 }
 
+/**
+ * Renders editor for specific special holiday
+ * @param {Object} - element targetted by onclick event
+ */
+function renderSpecialEditor(el) {
+    const lang = document.getElementById('lang').innerText
+    const year = document.getElementById('year').value
+    const title = document.getElementById('day')
+    let month = el.innerText
+
+    const obj = specialDays[lang]
+    month = specialDays['Niemieckie'][
+        Object.keys(obj).find(key => obj[key] === month)
+    ]
+
+    document.getElementById('gray').style.display = ''
+    document.getElementsByTagName('textarea')[0].value = getData(year, month, null)
+    title.innerText = el.innerText
+}
+
 
 /** 
  * Add day numbers to calendar.
@@ -281,8 +288,7 @@ function setDays(year) {
     let months = document.getElementsByClassName('month')
     let month
     let days, day
-    let specialDay = 0
-
+    let len
     let offset
 
     if (year % 400 === 0 || (year % 100 !== 0 && year % 4 === 0)) {
@@ -292,6 +298,7 @@ function setDays(year) {
     }
 
     for (let m = 1; m <= 12; m++) {
+        len = (m === 1 || m === 7) ? 32 : 33
         days = []
         day = 0
 
@@ -311,40 +318,17 @@ function setDays(year) {
             days[k].onclick = undefined
         }
         
-        for (let d = offset; d < monthDays[m] + offset; d++) {
+        for (let d = offset; d < len + offset; d++) {
             day++
-            if (day === 34) {
-                specialDay++
-                days[d].innerText = specialDays['Niemieckie'][specialDay]
-
-                days[d].onmouseover = function(e) {
-                    let value = this.innerText
-                    let obj = specialDays['Niemieckie']
-                    let dialog = document.createElement('div')
-                    let plName = specialDays['Polskie'][Object.keys(obj).find(key => obj[key] === value)]
-
-                    dialog.id = 'plName'
-                    dialog.innerText = plName
-                    document.body.prepend(dialog)
-                    dialog.style.top = e.clientY - e.offsetY - (1.5 * dialog.clientHeight) + 'px'
-                    dialog.style.left = e.clientX - e.offsetX - (dialog.clientWidth / 4) + 'px'
-                }
-
-                days[d].onmouseout = () => {
-                    document.getElementById('plName').remove()
-                }
-            } else {
-                days[d].innerText = day
-            }
-
+            days[d].innerText = day
             days[d].className = 'days'
 
             days[d].onclick = function() {
-                renderEditor(this)
+                renderDayEditor(this)
             }
         }
 
-        offset += monthDays[m] - 32
+        offset += len - 32
         if (offset >= 8) offset = 0
     }
 }
@@ -372,6 +356,7 @@ document.getElementById('lang').onclick = function() {
     let lang = document.getElementById('lang').innerText === 'Polskie' ? 'Niemieckie' : 'Polskie'
     let months = document.getElementsByClassName('monthName')
     let days = document.getElementsByClassName('dayName')
+    let sdays = document.getElementsByClassName('specialDay')
 
     for (let m = 1; m <= 12; m++) {
         months[m - 1].innerText = monthNames[lang][m]
@@ -379,6 +364,10 @@ document.getElementById('lang').onclick = function() {
 
     for (let d = 0; d < days.length; d++) {
         days[d].innerText = dayNames[lang][d % 8 + 1]
+    }
+
+    for (let s = 0; s < sdays.length; s++) {
+        sdays[s].innerText = specialDays[lang][s]
     }
 
     document.getElementById('lang').innerText = lang
@@ -411,7 +400,11 @@ document.getElementById('save').onclick = function() {
         ]
     } else {
         month = document.getElementById('day').innerText
-        month = month.substring(0, month.indexOf(' '))
+        
+        const obj = specialDays[lang]
+        month = specialDays['Niemieckie'][
+            Object.keys(obj).find(key => obj[key] === month)
+        ]
 
         day = null
     }
@@ -468,9 +461,14 @@ window.onload = () => {
 
     let main = document.getElementsByTagName('main')[0]
     let lang = document.getElementById('lang').innerText
-    let month, thead, tbody, tr, td, name
+    let container, month, thead, tbody, tr, td, name, sday
 
     for (let m = 1; m <= 12; m++) {
+        container = document.createElement('div')
+
+        sday = document.createElement('div')
+        sday.className = 'specialDay'
+
         month = document.createElement('table')
         month.className = 'month'
         thead = document.createElement('thead')
@@ -500,9 +498,49 @@ window.onload = () => {
             tbody.append(tr)
         }
 
+        sday.onclick = function() {
+            renderSpecialEditor(this)
+        }
+
+        switch (m) {
+        case 1:
+            sday.innerText = specialDays[lang][0]
+            container.prepend(sday)
+            break
+        
+        case 3:
+            sday.innerText = specialDays[lang][1]
+            container.append(sday)
+            break
+        
+        case 6:
+            sday.innerText = specialDays[lang][2]
+            container.append(sday)
+            break
+        
+        case 7:
+            sday.innerText = specialDays[lang][3]
+            container.append(sday)
+            break
+        
+        case 8:
+            sday.innerText = specialDays[lang][4]
+            container.append(sday)
+            break
+        
+        case 12:
+            sday.innerText = specialDays[lang][5]
+            container.append(sday)
+            break
+        
+        default:
+            break
+        }
+
         month.append(thead)
         month.append(tbody)
-        main.append(month)
+        container.append(month)
+        main.append(container)
     }
 
     setDays(document.getElementById('year').value)
