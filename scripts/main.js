@@ -77,8 +77,7 @@ const starSign = {
     
 }
 
-/**
- * Data JSON structure
+/** Data JSON structure
 [{
     'year': y,
     'data': [
@@ -100,10 +99,10 @@ let data = []
 
 /** 
  * Retrieves data from variable for a specific day
- * @param {String} year - current year
- * @param {String} month - German (Reikspiel) name of month; can also be a name of a special holiday
- * @param {String} day - number of selected day; if null, it means that that day is a special holiday
- * @return {String} retrieved data from variable
+ * @param {string} year - current year
+ * @param {string} month - German (Reikspiel) name of month; can also be a name of a special holiday
+ * @param {string} day - number of selected day; if null, it means that that day is a special holiday
+ * @return {string} retrieved data from variable
  */
 function getData(year, month, day) {
     let isYearSet = false
@@ -153,9 +152,9 @@ function getData(year, month, day) {
 
 /** 
  * Saves data from day editor to variable
- * @param {String} year - current year
- * @param {String} month - German (Reikspiel) name of month; can also be a name of a special holiday
- * @param {String} day - number of selected day; if null, it means that that day is a special holiday
+ * @param {string} year - current year
+ * @param {string} month - German (Reikspiel) name of month; can also be a name of a special holiday
+ * @param {string} day - number of selected day; if null, it means that that day is a special holiday
  */
 function saveData(year, month, day) {
     const text = document.getElementsByTagName('textarea')[0].value
@@ -213,13 +212,55 @@ function saveData(year, month, day) {
         }
     }
 
+    console.log(text)
+    // console.log(JSON.stringify(data))
+    console.log(month, day)
+
     if (isDaySet) {
         data[yindex].data[mindex].data[dindex].data = text
+
+        const monthIndex = Object.keys(monthNames['Niemieckie'])
+            .find(key => monthNames['Niemieckie'][key] === month)
+            .toString() - 1
+
+        const body = document.getElementsByClassName('monthName')[monthIndex]
+            .parentElement
+            .parentElement
+            .parentElement
+            .parentElement
+            .children[1]
+
+        let days = []
+
+        for (const row of body.children) {
+            days.push(
+                Array.from(row.children)
+                    .filter(el => el.classList.contains('days'))
+            )
+        }
+
+        if (text) {
+            days.flat()[parseInt(day) - 1].classList.add('day-data')
+        } else {
+            days.flat()[parseInt(day) - 1].classList.remove('day-data')
+        }
     } else {
         data[yindex].data[mindex].data = text
+
+        const specialIndex = Object.keys(specialDays['Niemieckie'])
+            .find(key => specialDays['Niemieckie'][key] === month)
+            .toString()
+
+        const body = document.getElementsByClassName('specialDay')[specialIndex]
+        console.log(specialIndex)
+
+        if (text) {
+            body.classList.add('special-data')
+        } else {
+            body.classList.remove('special-data')
+        }
     }
 }
-
 
 /** 
  * Renders editor for specific day of month
@@ -282,13 +323,16 @@ function renderSpecialEditor(el) {
 
 /** 
  * Add day numbers to calendar.
- * @param {Number} year - current year
+ * @param {number} year - current year
  */
 function setDays(year) {
-    let months = document.getElementsByClassName('month')
+    const months = document.getElementsByClassName('month')
+    const specials = document.getElementsByClassName('specialDay')
+
+    const yData = data.find(el => el.year === year.toString())?.data
+
+    let mData
     let month
-    let days, day
-    let len
     let offset
 
     if (year % 400 === 0 || (year % 100 !== 0 && year % 4 === 0)) {
@@ -298,9 +342,13 @@ function setDays(year) {
     }
 
     for (let m = 1; m <= 12; m++) {
-        len = (m === 1 || m === 7) ? 32 : 33
-        days = []
-        day = 0
+        if (yData) {
+            mData = yData.find(el => el.month === monthNames['Niemieckie'][m])?.data
+        }
+
+        let len = (m === 1 || m === 7) ? 32 : 33
+        let days = []
+        let day = 1
 
         month = months[m - 1].children[1].children
 
@@ -312,16 +360,21 @@ function setDays(year) {
 
         for (let k = 0; k < days.length; k++) {
             days[k].innerText = ''
-            days[k].className = ''
+            days[k].className = 'day-null'
             days[k].onmouseover = undefined
             days[k].onmouseout = undefined
             days[k].onclick = undefined
         }
-        
-        for (let d = offset; d < len + offset; d++) {
-            day++
+
+        for (let d = offset; d < len + offset; d++, day++) {
             days[d].innerText = day
             days[d].className = 'days'
+
+            if (mData) {
+                if (mData.find(el => el.day === day.toString())?.data) {
+                    days[d].classList.add('day-data')
+                }
+            }
 
             days[d].onclick = function() {
                 renderDayEditor(this)
@@ -331,25 +384,37 @@ function setDays(year) {
         offset += len - 32
         if (offset >= 8) offset = 0
     }
+
+    for (const i in specialDays['Niemieckie']) {
+        specials[i].classList.remove('special-data')
+
+        if (yData) {
+            mData = yData.find(el => el.month === specialDays['Niemieckie'][i])?.data
+            if (mData) {
+                specials[i].classList.add('special-data')
+            }
+        }
+    }
 }
 
 
-document.getElementById('prevYear').onclick = () => {
-    let year = parseInt(document.getElementById('year').value) - 1
-    let len = year.toString().length
-    document.getElementById('year').value = year
-    document.getElementById('year').size = len - 1 > 0 ? len -1 : 1
-    setDays(year)
-}
-
-
-document.getElementById('nextYear').onclick = () => {
-    let year = parseInt(document.getElementById('year').value) + 1
+/**
+ * Changes current year on button press
+ * @param {number} n 
+ */
+const changeYear = (n) => {
+    let year = parseInt(document.getElementById('year').value) + n
     let len = year.toString().length
     document.getElementById('year').value = year
     document.getElementById('year').size = len - 1 > 0 ? len - 1 : 1
     setDays(year)
 }
+
+
+document.getElementById('prevYear').onclick = changeYear.bind(null, -1)
+
+
+document.getElementById('nextYear').onclick = changeYear.bind(null, 1)
 
 
 document.getElementById('lang').onclick = function() {
@@ -392,7 +457,7 @@ document.getElementById('save').onclick = function() {
 
     if (!isNaN(parseInt(day))) {
         month = document.getElementById('day').innerText
-        month = month.substr(month.indexOf(' ') + 1)
+        month = month.substring(month.indexOf(' ') + 1)
 
         const obj = monthNames[lang]
         month = monthNames['Niemieckie'][
@@ -411,8 +476,6 @@ document.getElementById('save').onclick = function() {
 
     saveData(year, month, day)
 
-    console.log(JSON.stringify(data))
-
     document.getElementById('gray').style.display = 'none'
 }
 
@@ -427,10 +490,11 @@ document.getElementById('saveFile').onclick = () => {
     a.href = URL.createObjectURL(new Blob([JSON.stringify(data)], {
         type: 'text/plain'
     }))
-    a.setAttribute('download', 'data.txt')
+    a.setAttribute('download', 'data.json')
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
+    alert('Dane zostały wyeksportowane do pliku z powodzeniem!')
 }
 
 
@@ -440,6 +504,8 @@ document.getElementsByTagName('form')[0].onchange = function(e) {
     const fr = new FileReader()
     fr.onload = () => {
         data = JSON.parse(fr.result)
+        setDays(document.getElementById('year').value)
+        alert('Dane zostały wczytane z pliku z powodzeniem!')
     }
 
     fr.readAsText(fileList[0])
@@ -452,7 +518,7 @@ window.onload = () => {
         document.getElementById('year').value = 2522
         document.getElementById('year').size = 3
         break
-        
+
     default:
         document.getElementById('year').value = 1
         document.getElementById('year').size = 1

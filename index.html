@@ -3,7 +3,6 @@
 
 <head>
     <meta charset='UTF-8'>
-    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0'>
     <title>Kalendarz</title>
 
@@ -17,14 +16,14 @@
         <h2><span>Edycja: <b id='ed'>II</b></span></h2>
         <h3>
             <button id='prevYear'>&lt;</button>
-            <span>Rok: <input name='year' id='year' value='0' size='0'></span>
+            <span>Rok: <input name='year' id='year' value='0' size='0' title='year' placeholder='2522'></span>
             <button id='nextYear'>&gt;</button>
         </h3>
         <h3><span>Nazwy:</span><button id='lang'>Polskie</button></h3>
         <form id='loadFile'>
             <label for='file'>Wczytaj plik:</label>
             <br>
-            <input type='file' name='file'>
+            <input type='file' name='file' title='file'placeholder='wgraj plik z danymi...'>
         </form>
         <button id='saveFile'>Zapisz do pliku</button>
     </header>
@@ -34,10 +33,12 @@
             <div id='editor'>
                 <h2 id='day'></h2>
                 <form>
-                    <textarea></textarea>
+                    <textarea title='day-desc' placeholder='wpisz opis dnia...'></textarea>
                 </form>
-                <button id='save'>Zapisz wpis</button>
-                <button id='close'>Zamknij</button>
+                <span>
+                    <button id='save'>Zapisz wpis</button>
+                    <button id='close'>Zamknij</button>
+                </span>
             </div>
         </div>
     </main>
